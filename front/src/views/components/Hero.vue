@@ -53,24 +53,17 @@
                 </div>
                 <el-table
                     class="predict-table"
-                    v-for="(table, key) in tableData"
-                    :key="key"
-                    :data="table"
-                    :span-method="objectSpanMethod"
+                    v-if="tableShow"
+                    :data="tableData"
                     style="width: 100%">
                     <el-table-column
-                        prop="filename"
-                        label="Filename"
+                        prop="field"
+                        label="Field"
                         width="180">
                     </el-table-column>
                     <el-table-column
-                        prop="class"
-                        label="Class"
-                        width="360">
-                    </el-table-column>
-                    <el-table-column
-                        prop="confidence"
-                        label="Confidence">
+                        prop="value"
+                        label="Value">
                     </el-table-column>
                 </el-table>
                 <div class="row align-items-center justify-content-around stars-and-coded">
@@ -130,7 +123,8 @@ export default {
             tableData: [],
             distribute: false,
             publicAddress: '',
-            seedPhrase: ''
+            seedPhrase: '',
+            tableShow: false
         };
     },
     methods: {
@@ -199,19 +193,6 @@ export default {
                 this.dialogVisible = true
             }
         }, 
-        objectSpanMethod({ row, column, rowIndex, columnIndex }) {
-            if (columnIndex == 0 && rowIndex == 0) {
-                return {
-                    rowspan: 5,
-                    colspan: 1
-                }
-            } else if(columnIndex == 0 && rowIndex != 0) {
-                return {
-                    rowspan: 0,
-                    colspan: 0
-                }
-            }
-        },
         sendFiles(files, url) {
             if(files.length == 0) return
             let formData = new FormData()
@@ -231,9 +212,21 @@ export default {
                 this.$message.error('No file specified')
             } else {
                 axios.post(url+"/writechain/", formData, headerConfig).then(res => {
-                    console.log(res)
-
+                    if(res.data.status != 200) {
+                        this.$message.error(res.data.data)
+                    } else {
+                        this.tableShow = true
+                        const blocks = res.data.data
+                        for(let key in blocks) {
+                            console.log(key, blocks[key])
+                            this.tableData.push({
+                                field: key,
+                                value: blocks[key]
+                            })
+                        }
+                    }
                 }).catch(err => {
+                    this.$message.error('server error')
                     console.error(err)
                 })
             }

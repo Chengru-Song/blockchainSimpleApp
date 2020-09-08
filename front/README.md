@@ -45,7 +45,7 @@ docker pull ethereum/client-go:alltools-stable
 Then run the image interactively by typing the following command:
 
 ```shell
-docker run -it ethereum/client-go:alltools-stable
+docker run -it -p 8545:8545 ethereum/client-go:alltools-stable
 ```
 
 ```shell
@@ -66,6 +66,9 @@ geth --datadir ./datadir init genesis.json
 geth --datadir ./datadir --nat extip:`hostname -i` console
 # The authority account should run the following command
 geth --datadir ./datadir --nat extip:`hostname -i` --unlock 0 --password password.txt console
+# enable others to access smart contract through various apis
+geth --identity "admin" --rpc --rpcaddr "0.0.0.0" --rpcport "8545" --rpcapi="db,eth,net,web3,personal,web3" --da
+tadir datadir/ --port "30303" --nodiscover --allow-insecure-unlock console
 ```
 
 The very next thing to do is to add peers to current network
